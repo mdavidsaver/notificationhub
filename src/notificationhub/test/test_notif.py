@@ -4,6 +4,7 @@
 
 import gc
 import os
+import platform
 import threading
 import unittest
 import weakref
@@ -19,38 +20,39 @@ class TestPath(unittest.TestCase):
             self.assertTrue(os.path.isdir(path), "path: %r"%path)
 
 class TestHub(unittest.TestCase):
-    @staticmethod
-    def _garbage():
-        gc.collect()
-        everything = gc.get_objects()
-        ret = {obj for obj in everything if isinstance(obj, (_nh.NotificationHub, _nh.Notifier))}
-        return ret
+    if platform.python_implementation()!='PyPy': # I don't know how to test GC behavior w/ pypy.
+        @staticmethod
+        def _garbage():
+            gc.collect()
+            everything = gc.get_objects()
+            ret = {obj for obj in everything if isinstance(obj, (_nh.NotificationHub, _nh.Notifier))}
+            return ret
 
-    def assertNoNotif(self):
-        self.assertSetEqual(set(), self._garbage())
+        def assertNoNotif(self):
+            self.assertSetEqual(set(), self._garbage())
 
-    def setUp(self):
-        self._leftOvers = {weakref.ref(obj) for obj in self._garbage()}
-        
-    def tearDown(self):
-        leftOvers = {obj() for obj in self._leftOvers}
-        if None in leftOvers:
-            self.fail("Some leftovers expired during a later test...  Race condition :( %r", leftOvers)
-        newJunk = self._garbage().difference(leftOvers)
-        self.assertSetEqual(set(), newJunk)
-        
-    def test_gc1(self):
-        H = NotificationHub()
+        def setUp(self):
+            self._leftOvers = {weakref.ref(obj) for obj in self._garbage()}
 
-    def test_gc2(self):
-        H = NotificationHub()
-        N = H.add_notify(lambda:None)
+        def tearDown(self):
+            leftOvers = {obj() for obj in self._leftOvers}
+            if None in leftOvers:
+                self.fail("Some leftovers expired during a later test...  Race condition :( %r", leftOvers)
+            newJunk = self._garbage().difference(leftOvers)
+            self.assertSetEqual(set(), newJunk)
 
-    def test_gc3(self):
-        H = NotificationHub()
-        def stupid(H=H): # creates a strong reference loop
-            pass
-        N = H.add_notify(stupid)
+        def test_gc1(self):
+            H = NotificationHub()
+
+        def test_gc2(self):
+            H = NotificationHub()
+            N = H.add_notify(lambda:None)
+
+        def test_gc3(self):
+            H = NotificationHub()
+            def stupid(H=H): # creates a strong reference loop
+                pass
+            N = H.add_notify(stupid)
 
     def test_wake(self):
         evt = threading.Event()
