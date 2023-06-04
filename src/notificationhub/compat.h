@@ -8,9 +8,8 @@
 #ifdef _WIN32
 #  define VC_EXTRALEAN
 #  define STRICT
-#  include <windows.h>
 #  include <winsock2.h>
-#  include <ws2tcpip.h>
+#  include <windows.h>
 #else
 /* POSIX */
 #  include <sys/types.h>
@@ -25,7 +24,7 @@ typedef struct Mutex {
 
 static inline
 int MutexInit(Mutex* lock) {
-    InitializeCriticalSection(&lock->impl, NULL);
+    InitializeCriticalSection(&lock->impl);
     return 0;
 }
 
@@ -40,7 +39,7 @@ void MutexLock(Mutex* lock) {
 }
 
 static inline
-void MutexUnlock(Mutex*)(Mutex* lock) {
+void MutexUnlock(Mutex* lock) {
     LeaveCriticalSection(&lock->impl);
 }
 

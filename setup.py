@@ -5,12 +5,17 @@
 # SPDX-License-Identifier: BSD
 
 import os
+import platform
 
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as F:
     long_description = F.read()
+
+extra_libs = []
+if platform.system()=='Windows':
+    extra_libs += ['ws2_32']
 
 setup(
     name='notificationhub',
@@ -35,7 +40,9 @@ setup(
     ext_modules=cythonize([
         Extension('notificationhub._nh', [
                 'src/notificationhub/_nh.pyx',
-            ]),
+            ],
+            libraries=extra_libs,
+        ),
         Extension('notificationhub.test._test', [
                 'src/notificationhub/test/_test.pyx',
             ],
