@@ -1,0 +1,6 @@
+include pyproject.toml
+include README.md
+include src/notificationhub/compat.h
+include src/notificationhub/notificationhub.h
+include src/notificationhub/_nh.pyx
+include src/notificationhub/test/_test.pyx

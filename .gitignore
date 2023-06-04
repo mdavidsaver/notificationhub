@@ -1,0 +1,16 @@
+# cython debris
+_*.h
+_*.c
+
+# setuptools debris
+/build/
+/dist/
+*.egg-info/
+*.so
+*.dll
+*.dylib
+
+# python debris
+__pycache__/
+*.pyc
+*.pyo
